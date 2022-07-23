@@ -10,17 +10,17 @@ const api_key = process.env.API_KEY;
     Once Data fetched Successfully data gets stored into database. 
 */
 const getTransactions = async (req, res) => {
-    const userAddress = req.params.userAddress;
-    //Fetch
+    const userAddress = req.query.address;
+    if(!userAddress || userAddress==='')return renderError("Enter User Address");
     const response = await fetchTransactions(userAddress);
-    if (response[1] === '1') return renderError(response[2]);
+    if (response[1] === 1) return renderError(res,response[2]);
     //Store
     const dbresponse = storeTransactions(userAddress, response[0].result);
-    if (dbresponse[1] === '1') return renderError(dbresponse[2]); 
+    if (dbresponse[1] === 1)  return renderError(dbresponse[2]); 
     res.status(200).json({
         "message": "Transactions Data",
         "transactions": response[0]
-    })
+    }).end();
 }
 
 // Fetch
@@ -29,7 +29,7 @@ const fetchTransactions = async (userAddress) => {
     const response = await fetch(url)
         .then(res => res.json())
         .then((data) => {
-            if (data.status === '0') return ([{}, 1, "Invalid User Address"]);
+            if (data.status === '0') return [{}, 1, "Invalid User Address"];
             return [data, 0, ''];
         })
         .catch((err) => {
@@ -61,7 +61,7 @@ const renderError = (res, errdata) => {
     return res.status(500).json({
         "status": "NotOK",
         "message": errdata,
-    })
+    }).end();
 }
 
 /*
@@ -91,37 +91,42 @@ setInterval(async () => {
 */
 const getBalance = async (req, res) => {
     try {
-        const userAddress = req.params.userAddress;
-        var userData = await usersModel.find({ "address": userAddress });   
+        const userAddress = req.query.address;
+        if(!userAddress || userAddress===''){
+            return renderError(res,'Invalid Address');
+        }
+        var userData = await usersModel.findOne({ "address": userAddress });   
         //if user tries to fetch balance before fetching transactions
         if (!userData || userData.length === 0) {
+            //console.log(userData)
             const response = await fetchTransactions(userAddress);
             if (response[1]) return renderError(res, response[2]);
-
             const dbResponse = await storeTransactions(userAddress, response[0].result);
-            if (dbResponse[1]) return renderError(res, dbResponse[2]);
+            if (dbResponse[1])  return renderError(res, dbResponse[2]);
 
-            userData = await usersModel.find({ "address": userAddress });
+            userData = await usersModel.findOne({ "address": userAddress });
         }
+        console.log(userData);
         //Find Balance 
         var balance = 0;
-        userData[0].transactions.forEach(transaction => balance += parseFloat(transaction.value) * ((transaction.from === userAddress) ? -1 : 1));
+        userData.transactions.forEach(transaction => balance += parseFloat(transaction.value) * ((transaction.from === userAddress) ? -1 : 1));
 
         const coinData = await coinsModel.find();
-        const curPrice = coinData[0].currentPrice
+        const curPrice = parseFloat(coinData[0].currentPrice)
         let data = {
             "status": "OK",
             "balance": {
                 "wei": balance,
                 "ETH": balance / 1000000000000000000,
-                "inr": (balance / 1000000000000000000) * balance * curPrice,
+                "inr": (balance / 1000000000000000000) * (balance * curPrice),
             },
             "currentPrice": `${curPrice} inr`,
         }
-        res.status(200).json(data);
+        res.status(200).json(data).end();
     }
     catch (err) {
-        renderError(res,"Internal Error");
+        console.log(err);
+        return renderError(res,"Internal Error");
     }
 }
 /*
@@ -138,11 +143,17 @@ const home = (req, res) => {
         "
     >
         <h1>Koinx Api</h1>
-        <p>Use below routes where userAddress is <strong>0xce94e5621a5f7068253c42558c147480f38b5e0d</strong></p>
+        <p>Use below routes <br/>
+        where userAddress is <strong>0xce94e5621a5f7068253c42558c147480f38b5e0d</strong></p>
         <ul>
-            <li>getTransactions/<ENTER_USER_ADDRESS></li>
-            <li>getBalance/<ENTER_USER_ADDRESS></li>
+            <li>getTransactions/?&address=useraddress</li>
+            <li>getBalance/?&address=useraddress</li>
         </ul>
+
+
+        <h5 >Try this</h5>
+        <a  style={color:red} href="https://koinx-api-v1/getTransactions/?&address=0x642ae78fafbb8032da552d619ad43f1d81e4dd7c">getTransactions</a>
+        <a style={color:red} href="https://koinx-api-v1/getBalance/?&address=0x642ae78fafbb8032da552d619ad43f1d81e4dd7c">getBalance</a>
     </div>`;
 
     res.send(info);
