@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 //Connect to mongoDB
-
+const port = process.env.PORT || 3000
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dt4pg.mongodb.net/?retryWrites=true&w=majority`;
 mongoose.connect(uri,{ 
     useNewUrlParser: true, 
@@ -18,4 +18,4 @@ const app = express();
 app.use('/',routes);
 app.use(express.json());
 //start server
-app.listen(3000, () => console.log('Server running at http://localhost:3000'))
+app.listen(port, () => console.log('Server running at http://localhost:3000'))
