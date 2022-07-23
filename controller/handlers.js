@@ -152,8 +152,8 @@ const home = (req, res) => {
 
 
         <h5 >Try this</h5>
-        <a  style={color:red} href="https://koinx-api-v1/getTransactions/?&address=0x642ae78fafbb8032da552d619ad43f1d81e4dd7c">getTransactions</a>
-        <a style={color:red} href="https://koinx-api-v1/getBalance/?&address=0x642ae78fafbb8032da552d619ad43f1d81e4dd7c">getBalance</a>
+        <a  style={color:red} href="https://koinx-api-v1.herokuapp.com/getTransactions/?&address=0x642ae78fafbb8032da552d619ad43f1d81e4dd7c">getTransactions</a>
+        <a style={color:red} href="https://koinx-api-v1.herokuapp.com/getBalance/?&address=0x642ae78fafbb8032da552d619ad43f1d81e4dd7c">getBalance</a>
     </div>`;
 
     res.send(info);
