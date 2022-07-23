@@ -33,7 +33,7 @@ const fetchTransactions = async (userAddress) => {
             return [data, 0, ''];
         })
         .catch((err) => {
-            console.log(err);
+    
             return [, 1, err];
         });
     return response;
@@ -98,7 +98,7 @@ const getBalance = async (req, res) => {
         var userData = await usersModel.findOne({ "address": userAddress });   
         //if user tries to fetch balance before fetching transactions
         if (!userData || userData.length === 0) {
-            //console.log(userData)
+
             const response = await fetchTransactions(userAddress);
             if (response[1]) return renderError(res, response[2]);
             const dbResponse = await storeTransactions(userAddress, response[0].result);
@@ -106,7 +106,7 @@ const getBalance = async (req, res) => {
 
             userData = await usersModel.findOne({ "address": userAddress });
         }
-        console.log(userData);
+
         //Find Balance 
         var balance = 0;
         userData.transactions.forEach(transaction => balance += parseFloat(transaction.value) * ((transaction.from === userAddress) ? -1 : 1));
