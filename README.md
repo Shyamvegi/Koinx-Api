@@ -1,6 +1,6 @@
 ## Backend Assignment
 
-Here is live link https://koinx-api-v1/herokuapp.com
+Here is live link https://koinx-api-v1.herokuapp.com
 
 Tech Used : Javascript Node.js,Express.js,MongoDB
 Deployed Using : Heroku
